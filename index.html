@@ -15,7 +15,6 @@
 
     <main class="dashboard-container">
 
-        
         <div class="widget sensor-widget">
             <h3 class="widget-title">Humedad Ambiente</h3>
             <div class="widget-body">
@@ -37,29 +36,36 @@
             </div>
         </div>
 
-        
         <div class="widget actuator-widget">
-            <h3 class="widget-title">Bomba de Agua</h3>
+            <h3 class="widget-title">Bomba de Riego</h3>
             <div class="widget-body">
                 <div id="bomba_status" class="status-indicator status-unknown">OFF</div>
             </div>
             <div class="widget-footer">
-                <button class="control-button button-on" id="bombaOn">Encender</button>
-                <button class="control-button button-off" id="bombaOff">Apagar</button>
+                <button class="control-button button-on" id="bombaOn">Regar</button>
+                <button class="control-button button-off" id="bombaOff">Detener</button>
             </div>
         </div>
 
         <div class="widget actuator-widget">
-            <h3 class="widget-title">Servo del Techo (1)</h3>
+            <h3 class="widget-title">Puerta/Techo (Servo 1)</h3>
             <div class="widget-body">
                 <div id="servo1_status" class="status-indicator status-unknown">0°</div>
             </div>
+            <div class="widget-footer">
+                <button class="control-button button-on" id="servo1On">Abrir</button>
+                <button class="control-button button-off" id="servo1Off">Cerrar</button>
+            </div>
         </div>
 
         <div class="widget actuator-widget">
-            <h3 class="widget-title">Servo de Ventilación (2)</h3>
+            <h3 class="widget-title">Ventilación (Servo 2)</h3>
             <div class="widget-body">
                 <div id="servo2_status" class="status-indicator status-unknown">0°</div>
+            </div>
+            <div class="widget-footer">
+                <button class="control-button button-on" id="servo2On">Abrir</button>
+                <button class="control-button button-off" id="servo2Off">Cerrar</button>
             </div>
         </div>
         
@@ -68,12 +74,20 @@
             <div class="widget-body">
                 <div id="rele1_status" class="status-indicator status-unknown">OFF</div>
             </div>
+            <div class="widget-footer">
+                <button class="control-button button-on" id="rele1On">Encender</button>
+                <button class="control-button button-off" id="rele1Off">Apagar</button>
+            </div>
         </div>
 
         <div class="widget actuator-widget">
             <h3 class="widget-title">Ventilador (Relé 2)</h3>
             <div class="widget-body">
                 <div id="rele2_status" class="status-indicator status-unknown">OFF</div>
+            </div>
+            <div class="widget-footer">
+                <button class="control-button button-on" id="rele2On">Encender</button>
+                <button class="control-button button-off" id="rele2Off">Apagar</button>
             </div>
         </div>
 
