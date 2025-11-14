@@ -167,3 +167,47 @@ body {
         font-size: 1.8em;
     }
 }
+
+/* --- SECCIÓN NUEVA PARA BOTONES DE CONTROL --- */
+
+.widget-footer {
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+    padding: 15px;
+    display: flex;
+    justify-content: space-around; /* Reparte los botones */
+    gap: 10px;
+}
+
+.control-button {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    font-size: 0.9em;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    flex-grow: 1; /* Hace que ambos botones ocupen el mismo espacio */
+}
+
+.control-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.button-on {
+    background-color: var(--on-color);
+    color: white;
+}
+.button-on:hover {
+    background-color: #218838;
+}
+
+.button-off {
+    background-color: var(--off-color);
+    color: white;
+}
+.button-off:hover {
+    background-color: #c82333;
+}
