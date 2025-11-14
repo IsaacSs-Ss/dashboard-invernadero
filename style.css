@@ -1,0 +1,169 @@
+/* Google Fonts - para una tipografía moderna */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Montserrat:wght@400;700&display=swap');
+
+:root {
+    --primary-color: #3498db; /* Azul cielo */
+    --secondary-color: #2ecc71; /* Verde esmeralda */
+    --text-color: #333;
+    --background-color: #f0f2f5;
+    --card-bg: #ffffff;
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-medium: 0 6px 20px rgba(0, 0, 0, 0.1);
+    --on-color: #28a745; /* Verde Bootstrap */
+    --off-color: #dc3545; /* Rojo Bootstrap */
+    --unknown-color: #6c757d; /* Gris Bootstrap */
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Header */
+.header {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: var(--shadow-medium);
+}
+
+.header h1 {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 2.5em;
+}
+
+.mqtt-status {
+    font-size: 0.9em;
+    margin-top: 10px;
+    font-weight: 400;
+}
+
+.mqtt-status #estado-mqtt {
+    font-weight: 700;
+}
+.mqtt-status #estado-mqtt[style*="green"] { color: #d4edda; } /* Verde claro para el header */
+.mqtt-status #estado-mqtt[style*="red"] { color: #f8d7da; }  /* Rojo claro para el header */
+.mqtt-status #estado-mqtt[style*="orange"] { color: #fff3cd; } /* Naranja claro para el header */
+
+
+/* Contenedor del Dashboard */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Adaptativo */
+    gap: 25px;
+    padding: 30px;
+    max-width: 1300px;
+    margin: 30px auto;
+}
+
+/* Estilo para cada "Widget" (Tarjeta) */
+.widget {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow-light);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Para asegurar bordes redondeados en los gráficos */
+}
+
+.widget:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-medium);
+}
+
+.widget-title {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 15px 20px;
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 700;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.widget-body {
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1; /* Permite que el cuerpo crezca para llenar la tarjeta */
+}
+
+/* Contenedor del gráfico (para que sea responsivo dentro del widget) */
+.chart-container {
+    width: 100%;
+    height: 180px; /* Altura fija para los medidores */
+}
+
+/* Estilo para indicadores de estado (On/Off) */
+.status-indicator {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2em;
+    font-weight: 700;
+    padding: 30px 0;
+    width: 100%;
+    display: flex; /* Para centrar contenido */
+    justify-content: center;
+    align-items: center;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+.status-on { color: var(--on-color); }
+.status-off { color: var(--off-color); }
+.status-unknown { color: var(--unknown-color); }
+
+/* Animación y efectos para el texto de estado */
+.status-indicator.status-on {
+    animation: pulse-green 1.5s infinite;
+}
+.status-indicator.status-off {
+    animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-green {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.03); opacity: 0.9; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.03); opacity: 0.9; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+
+/* Media Queries para Responsividad */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 2em;
+    }
+    .dashboard-container {
+        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+        padding: 15px;
+    }
+    .widget {
+        margin-bottom: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.8em;
+    }
+    .widget-title {
+        font-size: 1.1em;
+    }
+    .status-indicator {
+        font-size: 1.8em;
+    }
+}
