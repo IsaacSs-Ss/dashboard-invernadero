@@ -9,7 +9,6 @@ const options = {
 const brokerUrl = `wss://${brokerHost}:${brokerPort}/mqtt`;
 
 // --- Tópicos ---
-// Usamos un objeto para que sea más fácil suscribirse
 const topicos = [
     "invernadero/humedad",
     "invernadero/temperatura/1",
@@ -28,7 +27,7 @@ const estadoSpan = document.getElementById('estado-mqtt');
 let humidityChart, temp1Chart, temp2Chart;
 let humidityData, temp1Data, temp2Data;
 const gaugeOptions = {
-    width: 250, height: 180,
+    width: 250, height: 180, // Ajustado para el nuevo diseño
     redFrom: 90, redTo: 100,
     yellowFrom:75, yellowTo: 90,
     minorTicks: 5,
@@ -57,7 +56,7 @@ function drawCharts() {
     // --- Gráfico de Temperatura 2 ---
     temp2Data = google.visualization.arrayToDataTable([['Label', 'Value'], ['Temp 2', 0]]);
     temp2Chart = new google.visualization.Gauge(document.getElementById('temp2_chart'));
-    temp2Chart.draw(temp2Data, tempOptions); // Reusamos las opciones de temp
+    temp2Chart.draw(temp2Data, tempOptions);
 }
 
 // --- Helper para actualizar estados ON/OFF ---
@@ -66,10 +65,12 @@ function updateStatusIndicator(elementId, message) {
     if (el) {
         el.textContent = message.toUpperCase();
         el.className = "status-indicator"; // Resetea clases
-        if (message.toUpperCase() === "ON") {
+        if (message.toUpperCase().includes("ON") || (message.toUpperCase().includes("0") && elementId.includes("servo"))) {
             el.classList.add("status-on");
-        } else {
-            el.classList.add("status-off");
+        } else if (message.toUpperCase().includes("OFF") || (message.toUpperCase().includes("90") && elementId.includes("servo"))) {
+             el.classList.add("status-off");
+        } else { // Para valores intermedios o desconocidos en servos
+             el.classList.add("status-unknown");
         }
     }
 }
@@ -81,9 +82,8 @@ const client = mqtt.connect(brokerUrl, options);
 client.on('connect', () => {
     console.log('¡Conectado a HiveMQ Cloud!');
     estadoSpan.textContent = "Conectado";
-    estadoSpan.style.color = "green";
+    estadoSpan.style.color = "#5cb85c"; // Verde más oscuro
     
-    // Nos suscribimos a TODOS los tópicos
     client.subscribe(topicos, (err) => {
         if (!err) {
             console.log(`Suscrito a ${topicos.length} tópicos.`);
@@ -93,15 +93,12 @@ client.on('connect', () => {
     });
 });
 
-// --- PASO 4: Manejador de mensajes ---
 client.on('message', (topic, message) => {
     const msg = message.toString();
     console.log(`Mensaje recibido en ${topic}: ${msg}`);
     
-    // Convertir a número para los gráficos
     const value = parseInt(msg);
 
-    // Un 'switch' para dirigir el mensaje al widget correcto
     switch (topic) {
         case "invernadero/humedad":
             if (humidityChart) {
@@ -121,12 +118,11 @@ client.on('message', (topic, message) => {
                 temp2Chart.draw(temp2Data, { ...gaugeOptions, min: 0, max: 50, greenFrom: 15, greenTo: 30, yellowFrom: 30, yellowTo: 40, redFrom: 40, redTo: 50 });
             }
             break;
-        // Casos para los actuadores
         case "invernadero/actuadores/bomba":
             updateStatusIndicator("bomba_status", msg);
             break;
         case "invernadero/actuadores/servo/1":
-            updateStatusIndicator("servo1_status", msg + "°"); // Añadimos 'grados'
+            updateStatusIndicator("servo1_status", msg + "°");
             break;
         case "invernadero/actuadores/servo/2":
             updateStatusIndicator("servo2_status", msg + "°");
@@ -140,16 +136,15 @@ client.on('message', (topic, message) => {
     }
 });
 
-// --- Manejadores de error y cierre ---
 client.on('error', (err) => {
     console.error('Error de conexión: ', err);
     estadoSpan.textContent = "Error de conexión";
-    estadoSpan.style.color = "red";
+    estadoSpan.style.color = "#d9534f"; // Rojo más oscuro
     client.end();
 });
 
 client.on('close', () => {
     console.log('Desconectado');
     estadoSpan.textContent = "Desconectado";
-    estadoSpan.style.color = "red";
+    estadoSpan.style.color = "#f0ad4e"; // Naranja
 });
