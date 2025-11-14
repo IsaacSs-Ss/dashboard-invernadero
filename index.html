@@ -2,107 +2,75 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Invernadero</title>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; }
-        h1 { text-align: center; color: #111; }
-        
-        /* Contenedor principal del dashboard */
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        /* Estilo para cada "Widget" */
-        .widget {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            padding: 20px;
-            text-align: center;
-        }
-        .widget h3 { margin-top: 0; }
-
-        /* Contenedor del gráfico (para que sea responsivo) */
-        .chart-container {
-            width: 100%;
-            height: 180px;
-        }
-
-        /* Estilo para indicadores de estado (On/Off) */
-        .status-indicator {
-            font-size: 1.5rem;
-            font-weight: bold;
-            padding: 20px 0;
-        }
-        .status-off { color: #d9534f; }
-        .status-on { color: #5cb85c; }
-        .status-unknown { color: #999; }
-
-        /* Estado de la conexión MQTT */
-        #estado-mqtt { 
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Invernadero IoT</title>
+    <link rel="stylesheet" href="style.css"> <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
-    <h1>Dashboard del Invernadero</h1>
-    <p id="estado-mqtt">Conectando...</p>
+    <header class="header">
+        <h1>Dashboard Invernadero IoT</h1>
+        <p class="mqtt-status">Estado MQTT: <span id="estado-mqtt">Conectando...</span></p>
+    </header>
 
-    <div class="dashboard-container">
+    <main class="dashboard-container">
 
-        <div class="widget">
-            <h3>Humedad</h3>
-            <div id="humedad_chart" class="chart-container"></div>
+        <div class="widget sensor-widget">
+            <h3 class="widget-title">Humedad Ambiente</h3>
+            <div class="widget-body">
+                <div id="humedad_chart" class="chart-container"></div>
+            </div>
         </div>
         
-        <div class="widget">
-            <h3>Temperatura 1</h3>
-            <div id="temp1_chart" class="chart-container">
-                <p class="status-indicator status-unknown">--</p>
+        <div class="widget sensor-widget">
+            <h3 class="widget-title">Temperatura Interna</h3>
+            <div class="widget-body">
+                <div id="temp1_chart" class="chart-container"></div>
             </div>
         </div>
 
-        <div class="widget">
-            <h3>Temperatura 2</h3>
-            <div id="temp2_chart" class="chart-container">
-                <p class="status-indicator status-unknown">--</p>
+        <div class="widget sensor-widget">
+            <h3 class="widget-title">Temperatura Externa</h3>
+            <div class="widget-body">
+                <div id="temp2_chart" class="chart-container"></div>
             </div>
         </div>
 
-        <div class="widget">
-            <h3>Bomba de Agua</h3>
-            <div id="bomba_status" class="status-indicator status-unknown">OFF</div>
+        <div class="widget actuator-widget">
+            <h3 class="widget-title">Bomba de Agua</h3>
+            <div class="widget-body">
+                <div id="bomba_status" class="status-indicator status-unknown">OFF</div>
+            </div>
         </div>
 
-        <div class="widget">
-            <h3>Servo 1</h3>
-            <div id="servo1_status" class="status-indicator status-unknown">OFF</div>
+        <div class="widget actuator-widget">
+            <h3 class="widget-title">Servo del Techo (1)</h3>
+            <div class="widget-body">
+                <div id="servo1_status" class="status-indicator status-unknown">0°</div>
+            </div>
         </div>
 
-        <div class="widget">
-            <h3>Servo 2</h3>
-            <div id="servo2_status" class="status-indicator status-unknown">OFF</div>
+        <div class="widget actuator-widget">
+            <h3 class="widget-title">Servo de Ventilación (2)</h3>
+            <div class="widget-body">
+                <div id="servo2_status" class="status-indicator status-unknown">0°</div>
+            </div>
         </div>
         
-        <div class="widget">
-            <h3>Relé 1</h3>
-            <div id="rele1_status" class="status-indicator status-unknown">OFF</div>
+        <div class="widget actuator-widget">
+            <h3 class="widget-title">Luz Interior (Relé 1)</h3>
+            <div class="widget-body">
+                <div id="rele1_status" class="status-indicator status-unknown">OFF</div>
+            </div>
         </div>
 
-        <div class="widget">
-            <h3>Relé 2</h3>
-            <div id="rele2_status" class="status-indicator status-unknown">OFF</div>
+        <div class="widget actuator-widget">
+            <h3 class="widget-title">Ventilador (Relé 2)</h3>
+            <div class="widget-body">
+                <div id="rele2_status" class="status-indicator status-unknown">OFF</div>
+            </div>
         </div>
 
-    </div>
+    </main>
 
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="app.js"></script>
