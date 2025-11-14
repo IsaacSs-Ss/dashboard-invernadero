@@ -9,17 +9,24 @@ const options = {
 const brokerUrl = `wss://${brokerHost}:${brokerPort}/mqtt`;
 
 // --- Tópicos ---
-const topicoHumedad = 'invernadero/humedad';
-// (A futuro, añadirás más tópicos aquí)
-// const topicoTemp1 = 'invernadero/temperatura/1';
-// const topicoBomba = 'invernadero/actuadores/bomba';
+// Usamos un objeto para que sea más fácil suscribirse
+const topicos = [
+    "invernadero/humedad",
+    "invernadero/temperatura/1",
+    "invernadero/temperatura/2",
+    "invernadero/actuadores/bomba",
+    "invernadero/actuadores/servo/1",
+    "invernadero/actuadores/servo/2",
+    "invernadero/actuadores/rele/1",
+    "invernadero/actuadores/rele/2"
+];
 
 // --- Elementos del HTML ---
 const estadoSpan = document.getElementById('estado-mqtt');
 
 // --- Variables de Google Charts ---
-let humidityChart;
-let humidityData;
+let humidityChart, temp1Chart, temp2Chart;
+let humidityData, temp1Data, temp2Data;
 const gaugeOptions = {
     width: 250, height: 180,
     redFrom: 90, redTo: 100,
@@ -31,24 +38,43 @@ const gaugeOptions = {
 
 // --- PASO 1: Cargar la librería de Google Charts ---
 google.charts.load('current', {'packages':['gauge']});
-google.charts.setOnLoadCallback(drawCharts); // Llama a drawCharts cuando esté lista
+google.charts.setOnLoadCallback(drawCharts);
 
 // --- PASO 2: Función para dibujar los gráficos iniciales ---
 function drawCharts() {
     // --- Gráfico de Humedad ---
-    humidityData = google.visualization.arrayToDataTable([
-        ['Label', 'Value'],
-        ['Humedad', 0] // Valor inicial
-    ]);
+    humidityData = google.visualization.arrayToDataTable([['Label', 'Value'], ['Humedad', 0]]);
     humidityChart = new google.visualization.Gauge(document.getElementById('humedad_chart'));
-    gaugeOptions.greenFrom = 30; // Definir rangos de color
-    gaugeOptions.greenTo = 75;
-    humidityChart.draw(humidityData, gaugeOptions);
+    let humOptions = { ...gaugeOptions, min: 0, max: 100, greenFrom: 30, greenTo: 75 };
+    humidityChart.draw(humidityData, humOptions);
 
-    // (A futuro, dibujarías los otros gráficos aquí)
+    // --- Gráfico de Temperatura 1 ---
+    temp1Data = google.visualization.arrayToDataTable([['Label', 'Value'], ['Temp 1', 0]]);
+    temp1Chart = new google.visualization.Gauge(document.getElementById('temp1_chart'));
+    let tempOptions = { ...gaugeOptions, min: 0, max: 50, greenFrom: 15, greenTo: 30, yellowFrom: 30, yellowTo: 40, redFrom: 40, redTo: 50 };
+    temp1Chart.draw(temp1Data, tempOptions);
+
+    // --- Gráfico de Temperatura 2 ---
+    temp2Data = google.visualization.arrayToDataTable([['Label', 'Value'], ['Temp 2', 0]]);
+    temp2Chart = new google.visualization.Gauge(document.getElementById('temp2_chart'));
+    temp2Chart.draw(temp2Data, tempOptions); // Reusamos las opciones de temp
 }
 
-// --- PASO 3: Conexión MQTT (esto se ejecuta en paralelo) ---
+// --- Helper para actualizar estados ON/OFF ---
+function updateStatusIndicator(elementId, message) {
+    const el = document.getElementById(elementId);
+    if (el) {
+        el.textContent = message.toUpperCase();
+        el.className = "status-indicator"; // Resetea clases
+        if (message.toUpperCase() === "ON") {
+            el.classList.add("status-on");
+        } else {
+            el.classList.add("status-off");
+        }
+    }
+}
+
+// --- PASO 3: Conexión MQTT ---
 console.log(`Intentando conectar a: ${brokerUrl}`);
 const client = mqtt.connect(brokerUrl, options);
 
@@ -57,13 +83,14 @@ client.on('connect', () => {
     estadoSpan.textContent = "Conectado";
     estadoSpan.style.color = "green";
     
-    // Nos suscribimos al tópico de humedad
-    client.subscribe(topicoHumedad, (err) => {
+    // Nos suscribimos a TODOS los tópicos
+    client.subscribe(topicos, (err) => {
         if (!err) {
-            console.log(`Suscrito a: ${topicoHumedad}`);
+            console.log(`Suscrito a ${topicos.length} tópicos.`);
+        } else {
+            console.error('Error de suscripción: ', err);
         }
     });
-    // (A futuro, te suscribes a todos tus tópicos aquí)
 });
 
 // --- PASO 4: Manejador de mensajes ---
@@ -71,19 +98,46 @@ client.on('message', (topic, message) => {
     const msg = message.toString();
     console.log(`Mensaje recibido en ${topic}: ${msg}`);
     
-    // Comprobar si el gráfico de humedad ya está listo
-    if (topic === topicoHumedad && humidityChart) {
-        const value = parseInt(msg); // Convertir mensaje a número
-        
-        // Actualizar el valor en la tabla de datos
-        humidityData.setValue(0, 1, value);
-        
-        // Volver a dibujar el gráfico con el nuevo valor
-        humidityChart.draw(humidityData, gaugeOptions);
+    // Convertir a número para los gráficos
+    const value = parseInt(msg);
+
+    // Un 'switch' para dirigir el mensaje al widget correcto
+    switch (topic) {
+        case "invernadero/humedad":
+            if (humidityChart) {
+                humidityData.setValue(0, 1, value);
+                humidityChart.draw(humidityData, { ...gaugeOptions, min: 0, max: 100, greenFrom: 30, greenTo: 75 });
+            }
+            break;
+        case "invernadero/temperatura/1":
+            if (temp1Chart) {
+                temp1Data.setValue(0, 1, value);
+                temp1Chart.draw(temp1Data, { ...gaugeOptions, min: 0, max: 50, greenFrom: 15, greenTo: 30, yellowFrom: 30, yellowTo: 40, redFrom: 40, redTo: 50 });
+            }
+            break;
+        case "invernadero/temperatura/2":
+            if (temp2Chart) {
+                temp2Data.setValue(0, 1, value);
+                temp2Chart.draw(temp2Data, { ...gaugeOptions, min: 0, max: 50, greenFrom: 15, greenTo: 30, yellowFrom: 30, yellowTo: 40, redFrom: 40, redTo: 50 });
+            }
+            break;
+        // Casos para los actuadores
+        case "invernadero/actuadores/bomba":
+            updateStatusIndicator("bomba_status", msg);
+            break;
+        case "invernadero/actuadores/servo/1":
+            updateStatusIndicator("servo1_status", msg + "°"); // Añadimos 'grados'
+            break;
+        case "invernadero/actuadores/servo/2":
+            updateStatusIndicator("servo2_status", msg + "°");
+            break;
+        case "invernadero/actuadores/rele/1":
+            updateStatusIndicator("rele1_status", msg);
+            break;
+        case "invernadero/actuadores/rele/2":
+            updateStatusIndicator("rele2_status", msg);
+            break;
     }
-    
-    // (A futuro, manejarías los otros tópicos aquí)
-    // else if (topic === topicoBomba) { ... }
 });
 
 // --- Manejadores de error y cierre ---
