@@ -22,13 +22,25 @@ const topicos_estado = [
 
 // --- Tópicos de COMANDO (La Web publica aquí) ---
 const t_bomba_cmd = "invernadero/actuadores/bomba/comando";
-// (Aquí añadirías los otros tópicos de comando)
+const t_servo1_cmd = "invernadero/actuadores/servo/1/comando";
+const t_servo2_cmd = "invernadero/actuadores/servo/2/comando";
+const t_rele1_cmd = "invernadero/actuadores/rele/1/comando";
+const t_rele2_cmd = "invernadero/actuadores/rele/2/comando";
 
 // --- Elementos del HTML ---
 const estadoSpan = document.getElementById('estado-mqtt');
 // Botones de control
 const btnBombaOn = document.getElementById('bombaOn');
 const btnBombaOff = document.getElementById('bombaOff');
+const btnServo1On = document.getElementById('servo1On');
+const btnServo1Off = document.getElementById('servo1Off');
+const btnServo2On = document.getElementById('servo2On');
+const btnServo2Off = document.getElementById('servo2Off');
+const btnRele1On = document.getElementById('rele1On');
+const btnRele1Off = document.getElementById('rele1Off');
+const btnRele2On = document.getElementById('rele2On');
+const btnRele2Off = document.getElementById('rele2Off');
+
 
 // --- Variables de Google Charts ---
 let humidityChart, temp1Chart, temp2Chart;
@@ -59,16 +71,22 @@ function drawCharts() {
 // --- Helper para actualizar estados ON/OFF ---
 function updateStatusIndicator(elementId, message) {
     const el = document.getElementById(elementId);
-    if (el) {
-        el.textContent = message.toUpperCase();
-        el.className = "status-indicator"; // Resetea clases
-        if (message.toUpperCase().includes("ON") || (message.toUpperCase().includes("0") && elementId.includes("servo"))) {
-            el.classList.add("status-on");
-        } else if (message.toUpperCase().includes("OFF") || (message.toUpperCase().includes("90") && elementId.includes("servo"))) {
-             el.classList.add("status-off");
-        } else {
-             el.classList.add("status-unknown");
-        }
+    if (!el) return;
+
+    const msgUpper = message.toUpperCase();
+    el.textContent = msgUpper;
+    el.className = "status-indicator"; // Resetea clases
+
+    if (msgUpper === "ON") {
+        el.classList.add("status-on"); // Verde
+    } else if (msgUpper.includes("90")) { // 90° = Abierto = Verde
+        el.classList.add("status-on");
+    } else if (msgUpper === "OFF") {
+        el.classList.add("status-off"); // Rojo
+    } else if (msgUpper.includes("0")) { // 0° = Cerrado = Rojo
+        el.classList.add("status-off");
+    } else {
+        el.classList.add("status-unknown"); // Gris
     }
 }
 
@@ -90,16 +108,27 @@ client.on('connect', () => {
         }
     });
 
-    // --- NUEVO: Asignar listeners a los botones ---
-    btnBombaOn.addEventListener('click', () => {
-        console.log('Publicando comando: ON');
-        client.publish(t_bomba_cmd, 'ON');
-    });
+    // --- NUEVO: Asignar listeners a TODOS los botones ---
+    
+    // Bomba
+    btnBombaOn.addEventListener('click', () => { client.publish(t_bomba_cmd, 'ON'); });
+    btnBombaOff.addEventListener('click', () => { client.publish(t_bomba_cmd, 'OFF'); });
 
-    btnBombaOff.addEventListener('click', () => {
-        console.log('Publicando comando: OFF');
-        client.publish(t_bomba_cmd, 'OFF');
-    });
+    // Servo 1 (Abrir=90, Cerrar=0)
+    btnServo1On.addEventListener('click', () => { client.publish(t_servo1_cmd, '90'); });
+    btnServo1Off.addEventListener('click', () => { client.publish(t_servo1_cmd, '0'); });
+
+    // Servo 2 (Abrir=90, Cerrar=0)
+    btnServo2On.addEventListener('click', () => { client.publish(t_servo2_cmd, '90'); });
+    btnServo2Off.addEventListener('click', () => { client.publish(t_servo2_cmd, '0'); });
+
+    // Relé 1
+    btnRele1On.addEventListener('click', () => { client.publish(t_rele1_cmd, 'ON'); });
+    btnRele1Off.addEventListener('click', () => { client.publish(t_rele1_cmd, 'OFF'); });
+
+    // Relé 2
+    btnRele2On.addEventListener('click', () => { client.publish(t_rele2_cmd, 'ON'); });
+    btnRele2Off.addEventListener('click', () => { client.publish(t_rele2_cmd, 'OFF'); });
 });
 
 // --- PASO 4: Manejador de mensajes (RECIBIR ESTADOS) ---
@@ -118,6 +147,7 @@ client.on('message', (topic, message) => {
         case "invernadero/temperatura/2":
             if (temp2Chart) { temp2Data.setValue(0, 1, value); temp2Chart.draw(temp2Data, { ...gaugeOptions, min: 0, max: 50, greenFrom: 15, greenTo: 30, yellowFrom: 30, yellowTo: 40, redFrom: 40, redTo: 50 }); }
             break;
+        // Actuadores
         case "invernadero/actuadores/bomba":
             updateStatusIndicator("bomba_status", msg);
             break;
